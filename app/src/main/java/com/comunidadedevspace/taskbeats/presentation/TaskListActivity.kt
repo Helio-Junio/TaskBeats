@@ -1,4 +1,4 @@
-package com.comunidadedevspace.taskbeats
+package com.comunidadedevspace.taskbeats.presentation
 
 
 import android.app.Activity
@@ -13,6 +13,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
+import com.comunidadedevspace.taskbeats.R
+import com.comunidadedevspace.taskbeats.data.AppDataBase
+import com.comunidadedevspace.taskbeats.data.Task
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
@@ -119,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         openTaskListDetail(task)
     }
 
-    private fun openTaskListDetail(task:Task?){
+    private fun openTaskListDetail(task: Task?){
         val intent = TaskDetailActivity.start(this, task)
         startForResult.launch(intent)
     }
