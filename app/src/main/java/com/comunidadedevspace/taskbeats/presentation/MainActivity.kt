@@ -11,15 +11,11 @@ import android.widget.LinearLayout
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.Room
 import com.comunidadedevspace.taskbeats.R
-import com.comunidadedevspace.taskbeats.data.AppDataBase
 import com.comunidadedevspace.taskbeats.data.Task
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
 import java.io.Serializable
 
 class MainActivity : AppCompatActivity() {
@@ -31,15 +27,8 @@ class MainActivity : AppCompatActivity() {
         TaskListAdapter(::onListItemClicked)
     }
 
-    private val dataBase by lazy {
-        Room.databaseBuilder(
-            applicationContext,
-            AppDataBase::class.java, "taskbeats-database"
-        ).build()
-    }
-
-    private val dao by lazy {
-        dataBase.taskDao()
+    private val viewModel: TaskListViewModel by lazy {
+        TaskListViewModel.create(application)
     }
 
     private val startForResult = registerForActivityResult(
@@ -49,13 +38,8 @@ class MainActivity : AppCompatActivity() {
             // Pegando resultado
             val data = result.data
             val taskAction = data?.getSerializableExtra(TASK_ACTION_RESULT) as TaskAction
-            val task: Task = taskAction.task
 
-            when (taskAction.actionType) {
-                ActionType.DELETE.name -> deleteById(task.id)
-                ActionType.CREATE.name -> insertIntoDataBase(task)
-                ActionType.UPDATE.name -> uptadeIntoDataBase(task)
-            }
+            viewModel.execute(taskAction)
         }
     }
 
@@ -64,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_task_list)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        listFromDataBase()
         ctnContent = findViewById(R.id.ctn_content)
 
         // RecyclerView
@@ -77,39 +60,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun insertIntoDataBase(task: Task){
-        CoroutineScope(IO).launch {
-            dao.insert(task)
-            listFromDataBase()
-        }
-    }
-
-    private fun uptadeIntoDataBase(task: Task){
-        CoroutineScope(IO).launch {
-            dao.update(task)
-            listFromDataBase()
-        }
+    override fun onStart() {
+        super.onStart()
+        listFromDataBase()
     }
 
     private fun deleteAll(){
-        CoroutineScope(IO).launch {
-            dao.deleteAll()
-            listFromDataBase()
-        }
-    }
-
-    private fun deleteById(id: Int){
-        CoroutineScope(IO).launch {
-            dao.deleteById(id)
-            listFromDataBase()
-        }
+        val taskAction = TaskAction(null, ActionType.DELETE_ALL.name)
+        viewModel.execute(taskAction)
     }
 
     private fun listFromDataBase(){
-        CoroutineScope(IO).launch {
-            val myDataBaseList: List<Task> = dao.getAll()
-            adapter.submitList(myDataBaseList)
-        }
+            //Observer
+            val listObserver = Observer<List<Task>>{ listTasks ->
+                if(listTasks.isEmpty()){
+                    ctnContent.visibility = View.VISIBLE
+                } else {
+                    ctnContent.visibility = View.GONE
+                }
+                adapter.submitList(listTasks)
+            }
+
+            //Live data
+        viewModel.tasklistLiveData.observe(this@MainActivity, listObserver)
     }
 
     private fun showMessage(view: View, message:String){
@@ -149,12 +122,13 @@ class MainActivity : AppCompatActivity() {
 // [CRUD] CREATE, READ, UPDATE, DELETE
 enum class ActionType {
     DELETE,
+    DELETE_ALL,
     UPDATE,
     CREATE
 }
 
 data class TaskAction(
-    val task: Task,
+    val task: Task?,
     val actionType: String
 ) : Serializable
 
