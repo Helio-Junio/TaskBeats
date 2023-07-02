@@ -1,6 +1,5 @@
 package com.comunidadedevspace.taskbeats.presentation
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,15 +9,20 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.comunidadedevspace.taskbeats.data.Task
 import com.comunidadedevspace.taskbeats.R
+import com.comunidadedevspace.taskbeats.data.local.Task
 import com.google.android.material.snackbar.Snackbar
 
 class TaskDetailActivity : AppCompatActivity() {
 
     private var task: Task? = null
     private lateinit var btnDone: Button
+
+    private val viewModel: TaskDetailViewModel by viewModels{
+        TaskDetailViewModel.getVMFactory(application)
+    }
 
     companion object{
         private const val TASK_DETAIL_EXTRA = "task.extra.detail"
@@ -28,7 +32,6 @@ class TaskDetailActivity : AppCompatActivity() {
                 .apply {
                     putExtra(TASK_DETAIL_EXTRA, task)
                 }
-
             return intent
         }
     }
@@ -63,13 +66,8 @@ class TaskDetailActivity : AppCompatActivity() {
                     showMessage(it, "Campos Obrigatórios")
                 }
         }
-        // Recuperar campo do XML
-        //tvTitle = findViewById(R.id.tv_task_title_detail)
-
-        // Setar um novo texto na tela
-        //tvTitle.text = task?.title ?: "Adicione uma tarefa"
     }
-    
+
     private fun addOrUpdateTask(
         id: Int,
         title: String,
@@ -77,7 +75,7 @@ class TaskDetailActivity : AppCompatActivity() {
         actionType: ActionType
     ) {
         val task = Task(id, title, description)
-        returnAction(task, actionType)
+        performAction(task, actionType)
 
     }
 
@@ -92,7 +90,7 @@ class TaskDetailActivity : AppCompatActivity() {
             R.id.delete_task -> {
 
                 if (task!= null){
-              returnAction(task!!, ActionType.DELETE)
+              performAction(task!!, ActionType.DELETE)
 
                 } else{
                     showMessage(btnDone,"Item não encontrado")
@@ -106,13 +104,9 @@ class TaskDetailActivity : AppCompatActivity() {
 
     }
 
-    private fun returnAction(task: Task, actionType: ActionType){
-        val intent = Intent()
-            .apply {
-                val taskAction = TaskAction(task, actionType.name)
-                putExtra(TASK_ACTION_RESULT, taskAction)
-            }
-        setResult(Activity.RESULT_OK, intent)
+    private fun performAction(task: Task, actionType: ActionType){
+        val taskAction = TaskAction(task, actionType.name)
+        viewModel.execute(taskAction)
         finish()
     }
 

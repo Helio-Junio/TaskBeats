@@ -2,11 +2,11 @@ package com.comunidadedevspace.taskbeats
 
 import android.app.Application
 import androidx.room.Room
-import com.comunidadedevspace.taskbeats.data.AppDataBase
+import com.comunidadedevspace.taskbeats.data.local.AppDataBase
 
 class TaskBeatsApplication: Application() {
 
-    private lateinit var dataBase :AppDataBase
+    private lateinit var dataBase : AppDataBase
 
     override fun onCreate() {
         super.onCreate()
@@ -17,7 +17,7 @@ class TaskBeatsApplication: Application() {
         ).build()
     }
 
-    fun getAppDataBase(): AppDataBase{
+    fun getAppDataBase(): AppDataBase {
         return dataBase
     }
 }
