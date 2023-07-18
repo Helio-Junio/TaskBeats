@@ -2,8 +2,7 @@
 Um aplicativo de tarefas com notícias, desenvolvido junto com a comunidade DevSpace na jornada do ZERO ao DEV.
 
 ## :camera_flash: Captura de Tela
-<img src="/
-" width="260">&emsp;
+<img src="/result/TaskBeats1.png" width="260">&emsp; <img src="/result/Taskbeats2.png" width="260">&emsp; <img src="/result/Taskbeats3.png" width="260">&emsp;
 
 
 ## Tecnologias
