@@ -11,7 +11,7 @@ Um aplicativo de tarefas com notícias, desenvolvido junto com a comunidade DevS
 * ViewGroup
     * RelativeLayout
     * LinearLayout
-    * ConstrantLayout
+    * ConstraintLayout
 - Components de UI
     - API News
     - ImageView
